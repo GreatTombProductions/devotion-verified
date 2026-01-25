@@ -1,7 +1,7 @@
 // Spotify OAuth 2.0 PKCE Flow + API Wrapper
 
 const SPOTIFY_CLIENT_ID = 'e94b7f19fe754828bc335fd2fc360bd5';
-const REDIRECT_URI = `${window.location.origin}/callback/`;
+const REDIRECT_URI = 'https://devotion-verified.vercel.app/callback/';
 const SCOPES = [
   'user-read-private',
   'user-read-email',
