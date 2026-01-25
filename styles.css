@@ -184,6 +184,16 @@ body {
   height: 24px;
 }
 
+.spotify-btn.connected {
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+}
+
+.spotify-btn.connected:hover {
+  background: rgba(29, 185, 84, 0.1);
+}
+
 /* Back Button */
 .back-btn {
   background: none;
