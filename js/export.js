@@ -9,19 +9,37 @@ function getExportDimensions(cardElement) {
   return { width: 600, height: 600 };
 }
 
+// Create off-screen clone for export (prevents flicker)
+function createExportClone(cardElement) {
+  const dims = getExportDimensions(cardElement);
+
+  // Clone the card
+  const clone = cardElement.cloneNode(true);
+
+  // Style for off-screen rendering
+  clone.style.position = 'fixed';
+  clone.style.left = '-9999px';
+  clone.style.top = '0';
+  clone.style.width = `${dims.width}px`;
+  clone.style.height = `${dims.height}px`;
+  clone.style.zIndex = '-1';
+
+  // Add to document
+  document.body.appendChild(clone);
+
+  return { clone, dims };
+}
+
 // Export card as PNG
 export async function exportAsPng(cardElement, filename = 'devotion-card.png') {
   try {
-    // Wait for images to load
-    await waitForImages(cardElement);
+    // Create off-screen clone
+    const { clone, dims } = createExportClone(cardElement);
 
-    // Get export dimensions and apply them temporarily
-    const dims = getExportDimensions(cardElement);
-    const originalStyle = cardElement.getAttribute('style') || '';
-    cardElement.style.width = `${dims.width}px`;
-    cardElement.style.height = `${dims.height}px`;
+    // Wait for images to load in clone
+    await waitForImages(clone);
 
-    const canvas = await html2canvas(cardElement, {
+    const canvas = await html2canvas(clone, {
       backgroundColor: null,
       scale: 2, // Higher quality
       useCORS: true,
@@ -31,8 +49,8 @@ export async function exportAsPng(cardElement, filename = 'devotion-card.png') {
       height: dims.height
     });
 
-    // Restore original style
-    cardElement.setAttribute('style', originalStyle);
+    // Remove clone
+    document.body.removeChild(clone);
 
     // Create download link
     const link = document.createElement('a');
@@ -50,16 +68,13 @@ export async function exportAsPng(cardElement, filename = 'devotion-card.png') {
 // Copy card to clipboard
 export async function copyToClipboard(cardElement) {
   try {
-    // Wait for images to load
-    await waitForImages(cardElement);
+    // Create off-screen clone
+    const { clone, dims } = createExportClone(cardElement);
 
-    // Get export dimensions and apply them temporarily
-    const dims = getExportDimensions(cardElement);
-    const originalStyle = cardElement.getAttribute('style') || '';
-    cardElement.style.width = `${dims.width}px`;
-    cardElement.style.height = `${dims.height}px`;
+    // Wait for images to load in clone
+    await waitForImages(clone);
 
-    const canvas = await html2canvas(cardElement, {
+    const canvas = await html2canvas(clone, {
       backgroundColor: null,
       scale: 2,
       useCORS: true,
@@ -69,8 +84,8 @@ export async function copyToClipboard(cardElement) {
       height: dims.height
     });
 
-    // Restore original style
-    cardElement.setAttribute('style', originalStyle);
+    // Remove clone
+    document.body.removeChild(clone);
 
     // Convert to blob
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));

@@ -95,8 +95,6 @@ function setupEventListeners() {
         // Scroll to search input
         setTimeout(() => elements.artistInput.focus(), 100);
       } else if (mode === 'profile') {
-        // Scroll down to show loading
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         startAnalysis();
       }
     });
@@ -245,6 +243,8 @@ async function selectArtist(artistId) {
 // Start analysis
 async function startAnalysis(artistId = null) {
   showScreen('loading');
+  // Scroll down to show loading screen
+  screens.loading.scrollIntoView({ behavior: 'smooth' });
   updateProgress(0, 'Initializing...');
 
   try {
