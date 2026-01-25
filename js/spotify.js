@@ -194,7 +194,13 @@ export async function getCurrentUser() {
 }
 
 export async function getTopArtists(timeRange = 'medium_term', limit = 50) {
-  return fetchAPI(`/me/top/artists?time_range=${timeRange}&limit=${limit}`);
+  const result = await fetchAPI(`/me/top/artists?time_range=${timeRange}&limit=${limit}`);
+  console.log(`[Devotion] getTopArtists(${timeRange}):`, {
+    total: result.total,
+    itemsCount: result.items?.length,
+    firstThree: result.items?.slice(0, 3).map(a => a.name)
+  });
+  return result;
 }
 
 export async function getTopTracks(timeRange = 'medium_term', limit = 50) {

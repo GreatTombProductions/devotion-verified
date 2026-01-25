@@ -141,6 +141,16 @@ export async function buildProfile(onProgress) {
   profile.topArtists.medium = mediumArtists.items;
   profile.topArtists.long = longArtists.items;
 
+  // Debug logging
+  console.log('[Devotion] Top Artists fetched:', {
+    short: shortArtists.items?.length || 0,
+    medium: mediumArtists.items?.length || 0,
+    long: longArtists.items?.length || 0,
+    shortSample: shortArtists.items?.slice(0, 3).map(a => a.name),
+    mediumSample: mediumArtists.items?.slice(0, 3).map(a => a.name),
+    longSample: longArtists.items?.slice(0, 3).map(a => a.name)
+  });
+
   // Fetch top tracks for all time ranges
   onProgress?.('Analyzing your top tracks...');
   const [shortTracks, mediumTracks, longTracks] = await Promise.all([

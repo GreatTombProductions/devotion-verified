@@ -257,6 +257,8 @@ async function selectArtist(artistId) {
 // Start analysis
 async function startAnalysis(artistId = null) {
   showScreen('loading');
+  // Scroll down to show loading screen
+  screens.loading.scrollIntoView({ behavior: 'smooth' });
   updateProgress(0, 'Initializing...');
 
   try {
@@ -303,6 +305,7 @@ function updateProgress(percent, text) {
 
 // Show results
 function showResults() {
+  console.log('[Devotion] showResults called, currentProfile:', currentProfile);
   showScreen('results');
   renderStats();
   updateCardPreview();
@@ -400,8 +403,20 @@ const TIME_RANGE_LABELS = {
 
 // Render profile overview stats
 function renderProfileStats() {
+  console.log('[Devotion] renderProfileStats called:', {
+    currentTimeRange,
+    profileExists: !!currentProfile,
+    topArtistsData: currentProfile?.topArtists ? {
+      short: currentProfile.topArtists.short?.length,
+      medium: currentProfile.topArtists.medium?.length,
+      long: currentProfile.topArtists.long?.length
+    } : 'no topArtists'
+  });
+
   const topArtists = currentProfile.topArtists[currentTimeRange].slice(0, 10);
   const timeLabel = TIME_RANGE_LABELS[currentTimeRange];
+
+  console.log('[Devotion] Rendering artists:', topArtists.map(a => a.name));
 
   const artistList = topArtists.length > 0
     ? topArtists.map((artist, i) => `
