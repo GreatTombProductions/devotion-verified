@@ -95,6 +95,8 @@ function setupEventListeners() {
         // Scroll to search input
         setTimeout(() => elements.artistInput.focus(), 100);
       } else if (mode === 'profile') {
+        // Scroll down to show loading
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         startAnalysis();
       }
     });

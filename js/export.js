@@ -1,18 +1,38 @@
 // Card Export Functions using html2canvas
 
+// Get export dimensions based on card size
+function getExportDimensions(cardElement) {
+  const size = cardElement.dataset.size || 'square';
+  if (size === 'story') {
+    return { width: 1080, height: 1920 };
+  }
+  return { width: 600, height: 600 };
+}
+
 // Export card as PNG
 export async function exportAsPng(cardElement, filename = 'devotion-card.png') {
   try {
     // Wait for images to load
     await waitForImages(cardElement);
 
+    // Get export dimensions and apply them temporarily
+    const dims = getExportDimensions(cardElement);
+    const originalStyle = cardElement.getAttribute('style') || '';
+    cardElement.style.width = `${dims.width}px`;
+    cardElement.style.height = `${dims.height}px`;
+
     const canvas = await html2canvas(cardElement, {
       backgroundColor: null,
       scale: 2, // Higher quality
       useCORS: true,
       allowTaint: true,
-      logging: false
+      logging: false,
+      width: dims.width,
+      height: dims.height
     });
+
+    // Restore original style
+    cardElement.setAttribute('style', originalStyle);
 
     // Create download link
     const link = document.createElement('a');
@@ -33,13 +53,24 @@ export async function copyToClipboard(cardElement) {
     // Wait for images to load
     await waitForImages(cardElement);
 
+    // Get export dimensions and apply them temporarily
+    const dims = getExportDimensions(cardElement);
+    const originalStyle = cardElement.getAttribute('style') || '';
+    cardElement.style.width = `${dims.width}px`;
+    cardElement.style.height = `${dims.height}px`;
+
     const canvas = await html2canvas(cardElement, {
       backgroundColor: null,
       scale: 2,
       useCORS: true,
       allowTaint: true,
-      logging: false
+      logging: false,
+      width: dims.width,
+      height: dims.height
     });
+
+    // Restore original style
+    cardElement.setAttribute('style', originalStyle);
 
     // Convert to blob
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));

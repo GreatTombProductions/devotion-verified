@@ -17,12 +17,8 @@ export function generateArtistCard(profile, options = {}) {
     `<span class="card-badge badge-${badge.tier}">${badge.icon} ${badge.name}</span>`
   ).join('');
 
-  const dimensions = size === 'story'
-    ? 'width: 1080px; height: 1920px;'
-    : 'width: 600px; height: 600px;';
-
   return `
-    <div class="devotion-card theme-${theme}" style="${dimensions}">
+    <div class="devotion-card theme-${theme}" data-size="${size}">
       <img
         class="card-artist-image"
         src="${af.artist.image || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23333" width="100" height="100"/></svg>'}"
@@ -113,12 +109,8 @@ export function generateProfileCard(profile, options = {}) {
       }).join('')
     : '<p class="empty-state">Not enough listening data yet. Keep streaming!</p>';
 
-  const dimensions = size === 'story'
-    ? 'width: 1080px; height: 1920px;'
-    : 'width: 600px; height: 600px;';
-
   return `
-    <div class="devotion-card profile-card theme-${theme}" style="${dimensions}">
+    <div class="devotion-card profile-card theme-${theme}" data-size="${size}">
       ${profile.user.profileImage ? `
         <img
           class="card-artist-image"
