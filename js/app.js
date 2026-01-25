@@ -114,6 +114,8 @@ function setupEventListeners() {
     btn.addEventListener('click', () => {
       showScreen(btn.dataset.target);
       currentProfile = null;
+      // Reset loading states on all mode buttons
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('loading'));
     });
   });
 
@@ -272,6 +274,8 @@ async function startAnalysis(artistId = null) {
     console.error('Analysis failed:', error);
     alert('Analysis failed: ' + error.message);
     showScreen('landing');
+    // Reset loading states
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('loading'));
   }
 }
 
@@ -288,6 +292,8 @@ function showResults() {
   showScreen('results');
   renderStats();
   updateCardPreview();
+  // Reset loading states on all mode buttons
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('loading'));
   // Scroll to top to ensure results are visible
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
