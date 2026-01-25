@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Devotion Verified</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- Landing Screen -->
+    <section id="landing" class="screen active">
+      <div class="container">
+        <header class="landing-header">
+          <h1 class="logo">DEVOTION<span class="verified">VERIFIED</span></h1>
+          <p class="tagline">Verify your devotion. Share your proof.</p>
+        </header>
+
+        <div class="mode-selection">
+          <button class="mode-btn" data-mode="artist">
+            <span class="mode-icon">🎤</span>
+            <span class="mode-title">Artist Deep Dive</span>
+            <span class="mode-desc">Prove your loyalty to a specific artist</span>
+          </button>
+
+          <button class="mode-btn" data-mode="profile">
+            <span class="mode-icon">📊</span>
+            <span class="mode-title">My Profile</span>
+            <span class="mode-desc">Your complete devotion overview</span>
+          </button>
+
+          <button class="mode-btn disabled" data-mode="campaign">
+            <span class="mode-icon">⚔️</span>
+            <span class="mode-title">Join Campaign</span>
+            <span class="mode-desc">Coming soon</span>
+          </button>
+        </div>
+
+        <button id="connect-spotify" class="spotify-btn">
+          <svg class="spotify-icon" viewBox="0 0 24 24" width="24" height="24">
+            <path fill="currentColor" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+          Connect with Spotify
+        </button>
+      </div>
+    </section>
+
+    <!-- Artist Search Screen -->
+    <section id="artist-search" class="screen">
+      <div class="container">
+        <button class="back-btn" data-target="landing">← Back</button>
+        <h2>Find Your Artist</h2>
+
+        <div class="search-container">
+          <input type="text" id="artist-input" placeholder="Search for an artist..." autocomplete="off">
+          <div id="search-results" class="search-results"></div>
+        </div>
+
+        <div class="or-divider">
+          <span>or</span>
+        </div>
+
+        <div class="paste-link">
+          <input type="text" id="spotify-link" placeholder="Paste Spotify artist link">
+          <button id="parse-link" class="secondary-btn">Go</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading Screen -->
+    <section id="loading" class="screen">
+      <div class="container loading-container">
+        <div class="loader"></div>
+        <h2 id="loading-text">Analyzing your devotion...</h2>
+        <p id="loading-subtext">Scanning your library</p>
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Dashboard -->
+    <section id="results" class="screen">
+      <div class="container results-container">
+        <button class="back-btn" data-target="landing">← Start Over</button>
+
+        <div class="results-layout">
+          <!-- Stats Panel -->
+          <div class="stats-panel">
+            <div id="stats-content">
+              <!-- Dynamically populated -->
+            </div>
+
+            <div class="customization-panel">
+              <h3>Customize Card</h3>
+
+              <div class="option-group">
+                <label>Theme</label>
+                <div class="theme-options">
+                  <button class="theme-btn active" data-theme="dark">Dark</button>
+                  <button class="theme-btn" data-theme="light">Light</button>
+                  <button class="theme-btn" data-theme="metal">Metal</button>
+                  <button class="theme-btn" data-theme="czarkain">Czarkain</button>
+                </div>
+              </div>
+
+              <div class="option-group">
+                <label>Card Size</label>
+                <div class="size-options">
+                  <button class="size-btn active" data-size="square">Square</button>
+                  <button class="size-btn" data-size="story">Story</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Preview -->
+          <div class="card-preview-container">
+            <div id="card-preview" class="card-preview">
+              <!-- Card rendered here -->
+            </div>
+
+            <div class="export-buttons">
+              <button id="download-btn" class="primary-btn">
+                <span>Download PNG</span>
+              </button>
+              <button id="copy-btn" class="secondary-btn">
+                <span>Copy to Clipboard</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- html2canvas for export -->
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+  <!-- App scripts -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

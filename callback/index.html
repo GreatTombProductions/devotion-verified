@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authenticating... | Devotion Verified</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+    .loader {
+      width: 50px;
+      height: 50px;
+      border: 3px solid #2a2a2a;
+      border-top-color: #1DB954;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    p { color: #888; }
+    .error { color: #ff4444; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="loader"></div>
+    <h1>Authenticating...</h1>
+    <p id="status">Exchanging authorization code</p>
+    <p id="error" class="error" style="display: none;"></p>
+  </div>
+
+  <script>
+    const SPOTIFY_CLIENT_ID = 'e94b7f19fe754828bc335fd2fc360bd5';
+    const REDIRECT_URI = `${window.location.origin}/callback/`;
+    const TOKEN_URL = 'https://accounts.spotify.com/api/token';
+
+    async function handleCallback() {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const state = params.get('state');
+      const error = params.get('error');
+
+      const statusEl = document.getElementById('status');
+      const errorEl = document.getElementById('error');
+
+      if (error) {
+        errorEl.textContent = `Authentication error: ${error}`;
+        errorEl.style.display = 'block';
+        statusEl.textContent = 'Failed';
+        return;
+      }
+
+      if (!code) {
+        errorEl.textContent = 'No authorization code received';
+        errorEl.style.display = 'block';
+        statusEl.textContent = 'Failed';
+        return;
+      }
+
+      // Verify state
+      const storedState = localStorage.getItem('spotify_auth_state');
+      if (state !== storedState) {
+        errorEl.textContent = 'State mismatch - please try again';
+        errorEl.style.display = 'block';
+        statusEl.textContent = 'Failed';
+        return;
+      }
+
+      // Get code verifier
+      const codeVerifier = localStorage.getItem('spotify_code_verifier');
+      if (!codeVerifier) {
+        errorEl.textContent = 'No code verifier found - please try again';
+        errorEl.style.display = 'block';
+        statusEl.textContent = 'Failed';
+        return;
+      }
+
+      statusEl.textContent = 'Exchanging code for token...';
+
+      try {
+        // Exchange code for token
+        const response = await fetch(TOKEN_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            client_id: SPOTIFY_CLIENT_ID,
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: REDIRECT_URI,
+            code_verifier: codeVerifier
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error_description || errorData.error || 'Token exchange failed');
+        }
+
+        const data = await response.json();
+
+        // Store token
+        const tokenExpiry = Date.now() + (data.expires_in * 1000);
+        localStorage.setItem('spotify_access_token', data.access_token);
+        localStorage.setItem('spotify_token_expiry', tokenExpiry.toString());
+
+        // Cleanup
+        localStorage.removeItem('spotify_code_verifier');
+        localStorage.removeItem('spotify_auth_state');
+
+        // Signal to main app that we just authenticated
+        localStorage.setItem('devotion_just_authed', 'true');
+
+        statusEl.textContent = 'Success! Redirecting...';
+
+        // Redirect back to main app
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 500);
+
+      } catch (err) {
+        errorEl.textContent = err.message;
+        errorEl.style.display = 'block';
+        statusEl.textContent = 'Failed';
+      }
+    }
+
+    handleCallback();
+  </script>
+</body>
+</html>
