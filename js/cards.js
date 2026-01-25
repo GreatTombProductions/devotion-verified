@@ -2,16 +2,23 @@
 
 import { formatRank, calculateDiscographyPercentage, getBestRank } from './analysis.js';
 
+// Time range labels for cards
+const TIME_RANGE_LABELS = {
+  short: '4 WEEKS',
+  medium: '6 MONTHS',
+  long: 'ALL TIME'
+};
+
 // Generate Artist Devotion Card HTML
 export function generateArtistCard(profile, options = {}) {
-  const { theme = 'dark', size = 'square' } = options;
+  const { theme = 'dark', size = 'square', timeRange = 'long' } = options;
   const af = profile.artistFocus;
 
   if (!af) {
     return '<div class="card-error">No artist selected</div>';
   }
 
-  const bestRank = getBestRank(profile);
+  const selectedRank = af.rank[timeRange];
   const discographyPercent = calculateDiscographyPercentage(profile);
   const badgesHtml = profile.badges.slice(0, 3).map(badge =>
     `<span class="card-badge badge-${badge.tier}">${badge.icon} ${badge.name}</span>`
@@ -34,16 +41,16 @@ export function generateArtistCard(profile, options = {}) {
       <div class="card-divider"></div>
 
       <div class="card-stats">
-        ${bestRank !== null ? `
+        ${selectedRank !== null ? `
           <div class="card-stat">
             <span class="card-stat-icon">🩸</span>
-            <span>${formatRank(bestRank)}</span>
+            <span>${formatRank(selectedRank)} (${TIME_RANGE_LABELS[timeRange]})</span>
           </div>
         ` : ''}
 
         <div class="card-stat">
           <span class="card-stat-icon">🎵</span>
-          <span>${af.savedTracks.length} tracks saved</span>
+          <span>${af.savedTracks.length} ${af.savedTracks.length === 1 ? 'track' : 'tracks'} saved</span>
         </div>
 
         ${discographyPercent > 0 ? `
@@ -77,20 +84,10 @@ export function generateArtistCard(profile, options = {}) {
 
 // Generate Profile Overview Card HTML
 export function generateProfileCard(profile, options = {}) {
-  const { theme = 'dark', size = 'square' } = options;
+  const { theme = 'dark', size = 'square', timeRange = 'long' } = options;
 
-  // Try long-term first, fall back to medium, then short
-  let topArtists = profile.topArtists.long.slice(0, 5);
-  let timeLabel = 'ALL TIME';
-
-  if (topArtists.length === 0) {
-    topArtists = profile.topArtists.medium.slice(0, 5);
-    timeLabel = '6 MONTHS';
-  }
-  if (topArtists.length === 0) {
-    topArtists = profile.topArtists.short.slice(0, 5);
-    timeLabel = '4 WEEKS';
-  }
+  const topArtists = profile.topArtists[timeRange].slice(0, 5);
+  const timeLabel = TIME_RANGE_LABELS[timeRange];
 
   const maxFollowers = topArtists[0]?.followers?.total || 1;
 
@@ -107,7 +104,7 @@ export function generateProfileCard(profile, options = {}) {
           </div>
         `;
       }).join('')
-    : '<p class="empty-state">Not enough listening data yet. Keep streaming!</p>';
+    : `<p class="empty-state">No data for ${timeLabel.toLowerCase()}. Try a different time range!</p>`;
 
   return `
     <div class="devotion-card profile-card theme-${theme}" data-size="${size}">

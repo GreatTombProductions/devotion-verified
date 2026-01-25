@@ -459,6 +459,13 @@ body {
   color: var(--accent);
 }
 
+.stat-row.highlight {
+  background: rgba(29, 185, 84, 0.1);
+  border-radius: 6px;
+  margin: 0 -0.5rem;
+  padding: 0.5rem;
+}
+
 /* Badges Display */
 .badges-display {
   display: flex;
@@ -509,13 +516,15 @@ body {
 }
 
 .theme-options,
-.size-options {
+.size-options,
+.time-options {
   display: flex;
   gap: var(--space-sm);
 }
 
 .theme-btn,
-.size-btn {
+.size-btn,
+.time-btn {
   flex: 1;
   padding: var(--space-sm) var(--space-md);
   background: var(--bg-card);
@@ -528,12 +537,14 @@ body {
 }
 
 .theme-btn:hover,
-.size-btn:hover {
+.size-btn:hover,
+.time-btn:hover {
   border-color: var(--accent);
 }
 
 .theme-btn.active,
-.size-btn.active {
+.size-btn.active,
+.time-btn.active {
   background: var(--accent);
   color: #000;
   border-color: var(--accent);

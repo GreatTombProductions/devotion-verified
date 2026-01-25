@@ -10,6 +10,7 @@ let currentMode = null; // 'artist' | 'profile'
 let currentProfile = null;
 let currentTheme = 'dark';
 let currentSize = 'square';
+let currentTimeRange = 'long'; // 'short' | 'medium' | 'long'
 let searchTimeout = null;
 
 // DOM Elements
@@ -116,6 +117,8 @@ function setupEventListeners() {
       currentProfile = null;
       // Reset loading states on all mode buttons
       document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('loading'));
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
 
@@ -161,6 +164,17 @@ function setupEventListeners() {
       btn.classList.add('active');
       currentSize = btn.dataset.size;
       setCardSize(elements.cardPreview, currentSize);
+      updateCardPreview();
+    });
+  });
+
+  // Time range buttons
+  document.querySelectorAll('.time-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentTimeRange = btn.dataset.time;
+      renderStats();
       updateCardPreview();
     });
   });
@@ -243,8 +257,6 @@ async function selectArtist(artistId) {
 // Start analysis
 async function startAnalysis(artistId = null) {
   showScreen('loading');
-  // Scroll down to show loading screen
-  screens.loading.scrollIntoView({ behavior: 'smooth' });
   updateProgress(0, 'Initializing...');
 
   try {
@@ -296,8 +308,6 @@ function showResults() {
   updateCardPreview();
   // Reset loading states on all mode buttons
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('loading'));
-  // Scroll to top to ensure results are visible
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Render stats panel
@@ -314,7 +324,7 @@ function renderStats() {
 // Render artist-focused stats
 function renderArtistStats() {
   const af = currentProfile.artistFocus;
-  const bestRank = getBestRank(currentProfile);
+  const selectedRank = af.rank[currentTimeRange];
   const discographyPercent = calculateDiscographyPercentage(currentProfile);
 
   const badgesHtml = currentProfile.badges.length > 0
@@ -324,6 +334,9 @@ function renderArtistStats() {
         ).join('')}
        </div>`
     : '';
+
+  // Helper to highlight selected time range
+  const isSelected = (range) => range === currentTimeRange ? 'highlight' : '';
 
   elements.statsContent.innerHTML = `
     <div class="stats-header">
@@ -335,21 +348,21 @@ function renderArtistStats() {
     </div>
 
     <div class="stat-row">
-      <span class="stat-label">Ranking</span>
-      <span class="stat-value highlight">${bestRank !== null ? formatRank(bestRank) : 'Not in top 50'}</span>
+      <span class="stat-label">Ranking (${TIME_RANGE_LABELS[currentTimeRange]})</span>
+      <span class="stat-value highlight">${selectedRank !== null ? formatRank(selectedRank) : 'Not in top 50'}</span>
     </div>
 
-    <div class="stat-row">
+    <div class="stat-row ${isSelected('short')}">
       <span class="stat-label">Short-term rank</span>
       <span class="stat-value">${af.rank.short ? `#${af.rank.short}` : '-'}</span>
     </div>
 
-    <div class="stat-row">
+    <div class="stat-row ${isSelected('medium')}">
       <span class="stat-label">Medium-term rank</span>
       <span class="stat-value">${af.rank.medium ? `#${af.rank.medium}` : '-'}</span>
     </div>
 
-    <div class="stat-row">
+    <div class="stat-row ${isSelected('long')}">
       <span class="stat-label">Long-term rank</span>
       <span class="stat-value">${af.rank.long ? `#${af.rank.long}` : '-'}</span>
     </div>
@@ -371,27 +384,24 @@ function renderArtistStats() {
 
     <div class="stat-row">
       <span class="stat-label">In Top Tracks</span>
-      <span class="stat-value">${af.tracksInTop.length} tracks</span>
+      <span class="stat-value">${af.tracksInTop.length} ${af.tracksInTop.length === 1 ? 'track' : 'tracks'}</span>
     </div>
 
     ${badgesHtml}
   `;
 }
 
+// Time range labels
+const TIME_RANGE_LABELS = {
+  short: 'Last 4 Weeks',
+  medium: 'Last 6 Months',
+  long: 'All Time'
+};
+
 // Render profile overview stats
 function renderProfileStats() {
-  // Try long-term first, fall back to medium, then short
-  let topArtists = currentProfile.topArtists.long.slice(0, 10);
-  let timeLabel = 'All Time';
-
-  if (topArtists.length === 0) {
-    topArtists = currentProfile.topArtists.medium.slice(0, 10);
-    timeLabel = 'Last 6 Months';
-  }
-  if (topArtists.length === 0) {
-    topArtists = currentProfile.topArtists.short.slice(0, 10);
-    timeLabel = 'Last 4 Weeks';
-  }
+  const topArtists = currentProfile.topArtists[currentTimeRange].slice(0, 10);
+  const timeLabel = TIME_RANGE_LABELS[currentTimeRange];
 
   const artistList = topArtists.length > 0
     ? topArtists.map((artist, i) => `
@@ -400,7 +410,7 @@ function renderProfileStats() {
           <span class="stat-value">${artist.name}</span>
         </div>
       `).join('')
-    : '<p class="empty-state">Not enough listening data yet. Keep streaming!</p>';
+    : `<p class="empty-state">No listening data for ${timeLabel.toLowerCase()}. Try a different time range!</p>`;
 
   elements.statsContent.innerHTML = `
     <div class="stats-header">
@@ -423,7 +433,7 @@ function updateCardPreview() {
 
   applyTheme(elements.cardPreview, currentTheme);
 
-  const options = { theme: currentTheme, size: currentSize };
+  const options = { theme: currentTheme, size: currentSize, timeRange: currentTimeRange };
 
   if (currentProfile.artistFocus) {
     elements.cardPreview.innerHTML = generateArtistCard(currentProfile, options);
