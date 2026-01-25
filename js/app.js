@@ -76,10 +76,13 @@ function setupEventListeners() {
   document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const mode = btn.dataset.mode;
-      if (mode === 'campaign' || btn.classList.contains('disabled')) return;
+      if (mode === 'campaign' || btn.classList.contains('disabled') || btn.classList.contains('loading')) return;
 
       currentMode = mode;
       localStorage.setItem('devotion_mode', mode);
+
+      // Add loading state
+      btn.classList.add('loading');
 
       if (!spotify.isAuthenticated()) {
         spotify.initiateAuth();
@@ -87,7 +90,10 @@ function setupEventListeners() {
       }
 
       if (mode === 'artist') {
+        btn.classList.remove('loading');
         showScreen('artistSearch');
+        // Scroll to search input
+        setTimeout(() => elements.artistInput.focus(), 100);
       } else if (mode === 'profile') {
         startAnalysis();
       }
@@ -282,6 +288,8 @@ function showResults() {
   showScreen('results');
   renderStats();
   updateCardPreview();
+  // Scroll to top to ensure results are visible
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Render stats panel
@@ -364,14 +372,27 @@ function renderArtistStats() {
 
 // Render profile overview stats
 function renderProfileStats() {
-  const topArtists = currentProfile.topArtists.long.slice(0, 10);
+  // Try long-term first, fall back to medium, then short
+  let topArtists = currentProfile.topArtists.long.slice(0, 10);
+  let timeLabel = 'All Time';
 
-  const artistList = topArtists.map((artist, i) => `
-    <div class="stat-row">
-      <span class="stat-label">#${i + 1}</span>
-      <span class="stat-value">${artist.name}</span>
-    </div>
-  `).join('');
+  if (topArtists.length === 0) {
+    topArtists = currentProfile.topArtists.medium.slice(0, 10);
+    timeLabel = 'Last 6 Months';
+  }
+  if (topArtists.length === 0) {
+    topArtists = currentProfile.topArtists.short.slice(0, 10);
+    timeLabel = 'Last 4 Weeks';
+  }
+
+  const artistList = topArtists.length > 0
+    ? topArtists.map((artist, i) => `
+        <div class="stat-row">
+          <span class="stat-label">#${i + 1}</span>
+          <span class="stat-value">${artist.name}</span>
+        </div>
+      `).join('')
+    : '<p class="empty-state">Not enough listening data yet. Keep streaming!</p>';
 
   elements.statsContent.innerHTML = `
     <div class="stats-header">
@@ -383,7 +404,7 @@ function renderProfileStats() {
       </div>
     </div>
 
-    <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Top Artists (All Time)</h3>
+    <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Top Artists (${timeLabel})</h3>
     ${artistList}
   `;
 }

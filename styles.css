@@ -551,10 +551,15 @@ body {
   border-radius: 16px;
   overflow: hidden;
   aspect-ratio: 1;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .card-preview.story {
   aspect-ratio: 9/16;
+  max-height: 500px;
+  width: auto;
+  max-width: 280px;
 }
 
 /* Card Inner Styles */
@@ -686,7 +691,7 @@ body {
   --card-border: #e0e0e0;
 }
 
-.theme-metal {
+.theme-red {
   --bg-primary: #0a0a0a;
   --bg-secondary: #0f0f0f;
   --bg-card: #0a0a0a;
@@ -697,13 +702,13 @@ body {
   --card-border: #8b0000;
 }
 
-.theme-metal .logo,
-.theme-metal .card-title {
+.theme-red .logo,
+.theme-red .card-title {
   font-family: var(--font-display);
   text-shadow: 0 0 10px rgba(139, 0, 0, 0.5);
 }
 
-.theme-czarkain {
+.theme-purple {
   --bg-primary: #0d0a0f;
   --bg-secondary: #1a1520;
   --bg-card: #0d0a0f;
@@ -716,7 +721,7 @@ body {
   --card-border: #6b2d5c;
 }
 
-.theme-czarkain .card-subtitle {
+.theme-purple .card-subtitle {
   letter-spacing: 0.3em;
 }
 
@@ -753,6 +758,29 @@ body {
 .top-artist-bar-fill {
   height: 100%;
   background: var(--accent);
+}
+
+/* Empty State */
+.empty-state {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: var(--space-lg);
+  font-style: italic;
+}
+
+/* Button Loading State */
+.mode-btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.mode-btn.loading .mode-icon {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 /* Utility Classes */

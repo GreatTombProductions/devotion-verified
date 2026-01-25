@@ -83,21 +83,35 @@ export function generateArtistCard(profile, options = {}) {
 export function generateProfileCard(profile, options = {}) {
   const { theme = 'dark', size = 'square' } = options;
 
-  const topArtists = profile.topArtists.long.slice(0, 5);
+  // Try long-term first, fall back to medium, then short
+  let topArtists = profile.topArtists.long.slice(0, 5);
+  let timeLabel = 'ALL TIME';
+
+  if (topArtists.length === 0) {
+    topArtists = profile.topArtists.medium.slice(0, 5);
+    timeLabel = '6 MONTHS';
+  }
+  if (topArtists.length === 0) {
+    topArtists = profile.topArtists.short.slice(0, 5);
+    timeLabel = '4 WEEKS';
+  }
+
   const maxFollowers = topArtists[0]?.followers?.total || 1;
 
-  const artistRows = topArtists.map((artist, i) => {
-    const barWidth = Math.max(20, (artist.followers?.total || 0) / maxFollowers * 100);
-    return `
-      <div class="top-artist-row">
-        <span class="top-artist-rank">${i + 1}</span>
-        <span class="top-artist-name">${escapeHtml(artist.name)}</span>
-        <div class="top-artist-bar">
-          <div class="top-artist-bar-fill" style="width: ${barWidth}%"></div>
-        </div>
-      </div>
-    `;
-  }).join('');
+  const artistRows = topArtists.length > 0
+    ? topArtists.map((artist, i) => {
+        const barWidth = Math.max(20, (artist.followers?.total || 0) / maxFollowers * 100);
+        return `
+          <div class="top-artist-row">
+            <span class="top-artist-rank">${i + 1}</span>
+            <span class="top-artist-name">${escapeHtml(artist.name)}</span>
+            <div class="top-artist-bar">
+              <div class="top-artist-bar-fill" style="width: ${barWidth}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('')
+    : '<p class="empty-state">Not enough listening data yet. Keep streaming!</p>';
 
   const dimensions = size === 'story'
     ? 'width: 1080px; height: 1920px;'
@@ -122,7 +136,7 @@ export function generateProfileCard(profile, options = {}) {
       <div class="card-divider"></div>
 
       <div class="card-top-artists">
-        <p class="card-section-title">TOP ARTISTS (ALL TIME)</p>
+        <p class="card-section-title">TOP ARTISTS (${timeLabel})</p>
         ${artistRows}
       </div>
 
@@ -158,14 +172,14 @@ export function getThemeStyles(theme) {
       '--card-accent': '#1DB954',
       '--card-border': '#e0e0e0'
     },
-    metal: {
+    red: {
       '--card-bg': '#050505',
       '--card-text': '#ffffff',
       '--card-text-secondary': '#888888',
       '--card-accent': '#8b0000',
       '--card-border': '#8b0000'
     },
-    czarkain: {
+    purple: {
       '--card-bg': '#0a0810',
       '--card-text': '#e8e0f0',
       '--card-text-secondary': '#8a7a9a',
@@ -180,11 +194,11 @@ export function getThemeStyles(theme) {
 // Apply theme to card preview container
 export function applyTheme(element, theme) {
   // Remove existing theme classes
-  element.classList.remove('theme-dark', 'theme-light', 'theme-metal', 'theme-czarkain');
+  element.classList.remove('theme-dark', 'theme-light', 'theme-red', 'theme-purple');
   element.classList.add(`theme-${theme}`);
 
   // Also apply to body for global styling
-  document.body.classList.remove('theme-dark', 'theme-light', 'theme-metal', 'theme-czarkain');
+  document.body.classList.remove('theme-dark', 'theme-light', 'theme-red', 'theme-purple');
   document.body.classList.add(`theme-${theme}`);
 }
 
