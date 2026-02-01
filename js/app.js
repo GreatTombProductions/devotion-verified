@@ -420,7 +420,7 @@ function renderArtistStats() {
 const TIME_RANGE_LABELS = {
   short: 'Last 4 Weeks',
   medium: 'Last 6 Months',
-  long: 'All Time'
+  long: 'Past Year'
 };
 
 // Render profile overview stats
